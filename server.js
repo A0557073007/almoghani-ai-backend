@@ -13,7 +13,7 @@ app.use(express.json({ limit: "20kb" }));
 
 app.use(cors({
   origin: [
-    "https://almoghani.net", 
+    "https://almoghani.net",
     "https://www.almoghani.net"
   ],
   methods: ["GET", "POST"]
