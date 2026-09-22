@@ -11,13 +11,17 @@ const openai = new OpenAI({
 
 app.use(express.json({ limit: "20kb" }));
 
-app.use(cors({
+const corsOptions = {
   origin: [
     "https://almoghani.net",
     "https://www.almoghani.net"
   ],
-  methods: ["GET", "POST"]
-}));
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Accept"],
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
   res.json({
@@ -48,6 +52,7 @@ app.post("/api/chat", async (req, res) => {
 
     const response = await openai.responses.create({
       model: "gpt-5-mini",
+
       instructions: `
 أنت ALMOGHANI AI، مساعد عربي لموقع ALMOGHANI.
 
@@ -62,11 +67,11 @@ app.post("/api/chat", async (req, res) => {
 - لا تختلق آية أو حديثًا أو مصدرًا.
 - ميّز بين الأحكام المتفق عليها والمسائل التي فيها خلاف معتبر.
 - لا تقدم نفسك كمفتٍ.
-- إذا كان السؤال يحتاج فتوى شخصية، وضح أن الإجابة معلومات عامة
-  وأن الأفضل الرجوع إلى عالم أو جهة إفتاء موثوقة.
+- إذا كان السؤال يحتاج فتوى شخصية، وضح أن الإجابة معلومات عامة وأن الأفضل الرجوع إلى عالم أو جهة إفتاء موثوقة.
 
 يمكنك أيضًا الإجابة عن الأسئلة العامة المفيدة للزائر.
 `,
+
       input: message
     });
 
@@ -75,7 +80,12 @@ app.post("/api/chat", async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+
+    console.error(
+      "CHAT_ERROR:",
+      error?.status,
+      error?.message
+    );
 
     res.status(500).json({
       error: "تعذر الاتصال بـ ALMOGHANI AI حاليًا."
