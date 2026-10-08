@@ -111,7 +111,10 @@ function removeFromRoom(socket) {
     room.members.delete(socket.id);
     if (room.members.size === 0) room.emptySince = Date.now();
     io.to(`chat:${roomName}`).emit("chat:presence", {
-      users: [...room.members.values()].map(({ userId, name }) => ({ userId, name }))
+      users: [...room.members.values()].map(member => ({
+        ...member,
+        muted: room.mutedUsers.has(member.userId)
+      }))
     });
   }
   socket.leave(`chat:${roomName}`);
@@ -154,16 +157,19 @@ io.on("connection", socket => {
       name,
       isAdmin: canModerate(socket),
       messages: room.chatEnabled ? room.messages : [],
-      users: [...room.members.values()],
+      users: [...room.members.values()].map(member => ({
+        ...member,
+        muted: room.mutedUsers.has(member.userId)
+      })),
       voiceParticipants: [...room.voiceParticipants],
       chatEnabled: room.chatEnabled,
       voiceEnabled: room.voiceEnabled,
       muted: room.mutedUsers.has(socket.id)
     });
     io.to(`chat:${roomName}`).emit("chat:presence", {
-      users: [...room.members.values()].map(({ userId, name: memberName }) => ({
-        userId,
-        name: memberName
+      users: [...room.members.values()].map(member => ({
+        ...member,
+        muted: room.mutedUsers.has(member.userId)
       }))
     });
     if (canModerate(socket)) {

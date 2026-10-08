@@ -282,7 +282,7 @@
         isAdmin = response.isAdmin;
         chatEnabled = response.chatEnabled;
         voiceEnabled = response.voiceEnabled;
-        members = response.users.map(member => ({ ...member, muted: false }));
+        members = response.users.map(member => ({ ...member, muted: member.muted ?? false }));
         isMuted = response.muted;
         renderMessages(response.messages);
         renderUsers();
@@ -310,7 +310,7 @@
     socket.on("chat:presence", ({ users: currentMembers }) => {
       members = currentMembers.map(member => ({
         ...member,
-        muted: members.find(current => current.userId === member.userId)?.muted || false
+        muted: member.muted ?? members.find(current => current.userId === member.userId)?.muted ?? false
       }));
       renderUsers();
     });
@@ -397,7 +397,6 @@
         byId("almVoiceMute").disabled = false;
         byId("almVoiceLeave").disabled = false;
         setNotice("أنت متصل صوتياً.");
-        response.participants.forEach(startOffer);
         renderVoiceMembers();
       });
     } catch {
