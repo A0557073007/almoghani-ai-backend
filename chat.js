@@ -134,6 +134,8 @@
     byId("almVoiceVisibility").textContent = voiceEnabled ? "إغلاق الصوت" : "فتح الصوت";
     byId("almChatForm").hidden = !chatEnabled;
     byId("almChatMessages").hidden = !chatEnabled;
+    byId("almChatInput").disabled = isMuted || !socket?.connected;
+    byId("almChatSend").disabled = isMuted || !socket?.connected;
     byId("almVoiceJoin").disabled = !voiceEnabled || !socket?.connected || isMuted || voiceJoined;
   }
 
@@ -252,6 +254,10 @@
   }
 
   function connect() {
+    if (typeof window.io !== "function") {
+      setNotice("تعذر تحميل خدمة الدردشة. أعد تحميل الصفحة وحاول مجدداً.");
+      return;
+    }
     if (socket) socket.disconnect();
     currentUserId = undefined;
     isAdmin = false;
@@ -313,7 +319,7 @@
     socket.on("chat:muted", ({ muted }) => {
       isMuted = muted;
       if (localStream) localStream.getAudioTracks().forEach(track => { track.enabled = !muted; });
-      byId("almVoiceJoin").disabled = !voiceEnabled || !socket.connected || muted || voiceJoined;
+      updateAdminControls();
       byId("almVoiceMute").textContent = muted ? "تم كتمك" : "كتم الميكروفون";
       if (muted) leaveVoice();
       setNotice(muted ? "قام المسؤول بكتمك في هذه الغرفة." : "تم إلغاء كتمك.");
@@ -374,7 +380,10 @@
       return;
     }
     try {
-      localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false
+      });
       socket.emit("voice:join", response => {
         if (response?.error) {
           localStream?.getTracks().forEach(track => track.stop());

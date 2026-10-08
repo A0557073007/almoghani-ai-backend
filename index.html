@@ -74,7 +74,7 @@ img{display:block;width:100%;height:auto}
     <button id="almChatClose" type="button" aria-label="إغلاق الدردشة">×</button>
   </header>
   <div class="alm-chat-setup">
-    <input id="almChatName" maxlength="32" autocomplete="nickname" placeholder="اسمك">
+    <input id="almChatName" maxlength="32" autocomplete="nickname" placeholder="اسمك" aria-label="اسمك">
     <input id="almChatRoom" maxlength="40" value="عام" aria-label="اسم الغرفة">
     <button id="almChatJoin" type="button">انضمام</button>
   </div>
@@ -86,14 +86,14 @@ img{display:block;width:100%;height:auto}
   <div id="almChatTextView" class="alm-chat-view">
     <div id="almChatMessages" aria-live="polite"></div>
     <form id="almChatForm">
-      <input id="almChatInput" maxlength="1000" autocomplete="off" placeholder="اكتب رسالتك..." aria-label="نص الرسالة">
-      <button id="almChatSend" type="submit" aria-label="إرسال">إرسال</button>
+      <input id="almChatInput" maxlength="1000" autocomplete="off" placeholder="اكتب رسالتك..." aria-label="نص الرسالة" disabled>
+      <button id="almChatSend" type="submit" aria-label="إرسال" disabled>إرسال</button>
     </form>
   </div>
   <div id="almChatVoiceView" class="alm-chat-view" hidden>
     <p>تواصل صوتياً مع المشاركين في الغرفة. اسمح باستخدام الميكروفون للانضمام.</p>
     <div class="alm-voice-actions">
-      <button id="almVoiceJoin" type="button">انضم للصوت</button>
+      <button id="almVoiceJoin" type="button" disabled>انضم للصوت</button>
       <button id="almVoiceMute" type="button" disabled>كتم الميكروفون</button>
       <button id="almVoiceLeave" type="button" disabled>مغادرة</button>
     </div>

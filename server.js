@@ -34,12 +34,18 @@ const io = new Server(server, {
     origin: corsOptions.origin,
     methods: ["GET", "POST"]
   },
+  allowRequest: (request, callback) => {
+    const origin = request.headers.origin;
+    callback(null, !origin || corsOptions.origin.includes(origin));
+  },
   maxHttpBufferSize: 100_000
 });
 
 const rooms = new Map();
 const messageRateLimits = new Map();
 const voiceSignalTypes = new Set(["offer", "answer", "ice"]);
+const asObject = value => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+const asCallback = value => typeof value === "function" ? value : () => {};
 
 function normalizeRoomName(value) {
   return String(value || "عام").normalize("NFKC").trim().slice(0, 40) || "عام";
@@ -51,14 +57,19 @@ function normalizeUserName(value) {
 
 function getRoom(name) {
   for (const [roomName, room] of rooms) {
-    if (room.members.size === 0 && room.emptySince && Date.now() - room.emptySince > 5 * 60 * 1000) {
+    if (
+      room.members.size === 0 &&
+      room.bannedNames.size === 0 &&
+      room.emptySince &&
+      Date.now() - room.emptySince > 5 * 60 * 1000
+    ) {
       rooms.delete(roomName);
     }
   }
   if (!rooms.has(name)) {
     if (rooms.size >= 100) {
       for (const [roomName, room] of rooms) {
-        if (room.members.size === 0) rooms.delete(roomName);
+        if (room.members.size === 0 && room.bannedNames.size === 0) rooms.delete(roomName);
       }
     }
     if (rooms.size >= 100) return null;
@@ -118,7 +129,9 @@ io.use((socket, next) => {
 });
 
 io.on("connection", socket => {
-  socket.on("chat:join", (payload = {}, acknowledge = () => {}) => {
+  socket.on("chat:join", (payload, callback) => {
+    payload = asObject(payload);
+    const acknowledge = asCallback(callback);
     const name = normalizeUserName(payload.name);
     const roomName = normalizeRoomName(payload.room);
     if (!name) return acknowledge({ error: "أدخل اسماً للانضمام إلى الدردشة." });
@@ -140,7 +153,7 @@ io.on("connection", socket => {
       userId: socket.id,
       name,
       isAdmin: canModerate(socket),
-      messages: room.messages,
+      messages: room.chatEnabled ? room.messages : [],
       users: [...room.members.values()],
       voiceParticipants: [...room.voiceParticipants],
       chatEnabled: room.chatEnabled,
@@ -158,7 +171,9 @@ io.on("connection", socket => {
     }
   });
 
-  socket.on("chat:message", (payload = {}, acknowledge = () => {}) => {
+  socket.on("chat:message", (payload, callback) => {
+    payload = asObject(payload);
+    const acknowledge = asCallback(callback);
     const roomName = socket.data.roomName;
     const room = rooms.get(roomName);
     if (!room || !room.chatEnabled) return acknowledge({ error: "الدردشة النصية مغلقة حالياً." });
@@ -185,11 +200,15 @@ io.on("connection", socket => {
     acknowledge({ ok: true });
   });
 
-  socket.on("voice:join", (acknowledge = () => {}) => {
+  socket.on("voice:join", (...args) => {
+    const acknowledge = asCallback(args.at(-1));
     const roomName = socket.data.roomName;
     const room = rooms.get(roomName);
     if (!room || !room.voiceEnabled) return acknowledge({ error: "الغرفة الصوتية مغلقة حالياً." });
     if (room.mutedUsers.has(socket.id)) return acknowledge({ error: "تم كتمك في هذه الغرفة." });
+    if (room.voiceParticipants.size >= 8 && !room.voiceParticipants.has(socket.id)) {
+      return acknowledge({ error: "وصلت الغرفة الصوتية إلى الحد الأقصى للمشاركين." });
+    }
     if (room.voiceParticipants.has(socket.id)) {
       return acknowledge({ participants: [...room.voiceParticipants].filter(id => id !== socket.id) });
     }
@@ -203,7 +222,8 @@ io.on("connection", socket => {
     leaveVoice(socket, rooms.get(socket.data.roomName));
   });
 
-  socket.on("voice:signal", (payload = {}) => {
+  socket.on("voice:signal", input => {
+    const payload = asObject(input);
     const room = rooms.get(socket.data.roomName);
     if (!room || !room.voiceParticipants.has(socket.id)) return;
     const { targetId, type, data } = payload;
@@ -223,7 +243,9 @@ io.on("connection", socket => {
     io.to(targetId).emit("voice:signal", { userId: socket.id, type, data });
   });
 
-  socket.on("admin:action", (payload = {}, acknowledge = () => {}) => {
+  socket.on("admin:action", (input, callback) => {
+    const payload = asObject(input);
+    const acknowledge = asCallback(callback);
     if (!canModerate(socket)) return acknowledge({ error: "غير مصرح لك بتنفيذ هذا الإجراء." });
     const roomName = socket.data.roomName;
     const room = rooms.get(roomName);
