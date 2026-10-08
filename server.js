@@ -5,6 +5,8 @@ const http = require("http");
 const { randomUUID, timingSafeEqual } = require("crypto");
 const { Server } = require("socket.io");
 
+require("dotenv").config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
@@ -48,7 +50,18 @@ function normalizeUserName(value) {
 }
 
 function getRoom(name) {
+  for (const [roomName, room] of rooms) {
+    if (room.members.size === 0 && room.emptySince && Date.now() - room.emptySince > 5 * 60 * 1000) {
+      rooms.delete(roomName);
+    }
+  }
   if (!rooms.has(name)) {
+    if (rooms.size >= 100) {
+      for (const [roomName, room] of rooms) {
+        if (room.members.size === 0) rooms.delete(roomName);
+      }
+    }
+    if (rooms.size >= 100) return null;
     rooms.set(name, {
       messages: [],
       members: new Map(),
@@ -56,7 +69,8 @@ function getRoom(name) {
       bannedNames: new Set(),
       mutedUsers: new Set(),
       chatEnabled: true,
-      voiceEnabled: true
+      voiceEnabled: true,
+      emptySince: undefined
     });
   }
   return rooms.get(name);
@@ -71,7 +85,7 @@ function isAdminTokenValid(token) {
 }
 
 function leaveVoice(socket, room, notify = true) {
-  if (!room || !room.voiceParticipants.delete(socket.id)) return;
+  if (!socket || !room || !room.voiceParticipants.delete(socket.id)) return;
   if (notify) {
     io.to(`chat:${socket.data.roomName}`).emit("voice:peer-left", { userId: socket.id });
   }
@@ -84,6 +98,7 @@ function removeFromRoom(socket) {
   if (room) {
     leaveVoice(socket, room);
     room.members.delete(socket.id);
+    if (room.members.size === 0) room.emptySince = Date.now();
     io.to(`chat:${roomName}`).emit("chat:presence", {
       users: [...room.members.values()].map(({ userId, name }) => ({ userId, name }))
     });
@@ -110,6 +125,7 @@ io.on("connection", socket => {
 
     removeFromRoom(socket);
     const room = getRoom(roomName);
+    if (!room) return acknowledge({ error: "عدد الغرف النشطة ممتلئ حالياً." });
     const normalizedName = name.toLocaleLowerCase();
     if (room.bannedNames.has(normalizedName)) {
       return acknowledge({ error: "لا يمكنك الانضمام إلى هذه الغرفة." });
@@ -117,6 +133,7 @@ io.on("connection", socket => {
 
     socket.data.roomName = roomName;
     socket.data.name = name;
+    room.emptySince = undefined;
     socket.join(`chat:${roomName}`);
     room.members.set(socket.id, { userId: socket.id, name });
     acknowledge({
@@ -246,6 +263,12 @@ io.on("connection", socket => {
         room.mutedUsers.delete(targetId);
         io.to(targetId).emit("chat:banned");
         io.sockets.sockets.get(targetId)?.disconnect(true);
+        break;
+      }
+      case "unban": {
+        const name = normalizeUserName(payload.name).toLocaleLowerCase();
+        if (!name) return acknowledge({ error: "أدخل اسم المستخدم لرفع الحظر." });
+        room.bannedNames.delete(name);
         break;
       }
       case "chat-visibility":

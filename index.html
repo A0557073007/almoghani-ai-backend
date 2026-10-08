@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ALMOGHANI</title>
+<link rel="stylesheet" href="chat.css">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#f5f0e6}
@@ -66,4 +67,59 @@ img{display:block;width:100%;height:auto}
   document.addEventListener('click',startAudio,true);
 })();
 </script>
+<button id="almChatBtn" type="button" aria-controls="almChatPanel" aria-expanded="false">💬 الدردشة المباشرة</button>
+<section id="almChatPanel" aria-label="دردشة ALMOGHANI" aria-hidden="true">
+  <header class="alm-chat-header">
+    <div><strong>ALMOGHANI</strong><span id="almChatConnection">دردشة مباشرة</span></div>
+    <button id="almChatClose" type="button" aria-label="إغلاق الدردشة">×</button>
+  </header>
+  <div class="alm-chat-setup">
+    <input id="almChatName" maxlength="32" autocomplete="nickname" placeholder="اسمك">
+    <input id="almChatRoom" maxlength="40" value="عام" aria-label="اسم الغرفة">
+    <button id="almChatJoin" type="button">انضمام</button>
+  </div>
+  <div id="almChatNotice" role="status" aria-live="polite"></div>
+  <nav class="alm-chat-tabs" aria-label="نوع الدردشة">
+    <button class="active" type="button" data-tab="text">💬 كتابية</button>
+    <button type="button" data-tab="voice">🎙️ صوتية</button>
+  </nav>
+  <div id="almChatTextView" class="alm-chat-view">
+    <div id="almChatMessages" aria-live="polite"></div>
+    <form id="almChatForm">
+      <input id="almChatInput" maxlength="1000" autocomplete="off" placeholder="اكتب رسالتك..." aria-label="نص الرسالة">
+      <button id="almChatSend" type="submit" aria-label="إرسال">إرسال</button>
+    </form>
+  </div>
+  <div id="almChatVoiceView" class="alm-chat-view" hidden>
+    <p>تواصل صوتياً مع المشاركين في الغرفة. اسمح باستخدام الميكروفون للانضمام.</p>
+    <div class="alm-voice-actions">
+      <button id="almVoiceJoin" type="button">انضم للصوت</button>
+      <button id="almVoiceMute" type="button" disabled>كتم الميكروفون</button>
+      <button id="almVoiceLeave" type="button" disabled>مغادرة</button>
+    </div>
+    <div id="almVoiceMembers" class="alm-voice-members">لا يوجد مشاركون صوتيون.</div>
+  </div>
+  <details id="almChatAdminLogin">
+    <summary>دخول المسؤول</summary>
+    <form id="almChatAdminForm">
+      <input id="almChatAdminToken" type="password" autocomplete="current-password" placeholder="رمز المسؤول">
+      <button type="submit">تفعيل الإدارة</button>
+    </form>
+  </details>
+  <section id="almChatAdmin" hidden aria-label="أدوات إدارة الدردشة">
+    <strong>إدارة الغرفة</strong>
+    <div class="alm-admin-toggles">
+      <button id="almChatVisibility" type="button">إخفاء الدردشة</button>
+      <button id="almVoiceVisibility" type="button">إغلاق الصوت</button>
+    </div>
+    <div id="almChatUsers"></div>
+    <form id="almChatUnbanForm">
+      <input id="almChatUnbanName" maxlength="32" placeholder="اسم لرفع الحظر">
+      <button type="submit">رفع الحظر</button>
+    </form>
+  </section>
+  <div id="almChatAudio" hidden></div>
+</section>
+<script src="https://almoghani-ai-backend-production.up.railway.app/socket.io/socket.io.js"></script>
+<script src="chat.js"></script>
 <script>(()=>{const E='https://almoghani-ai-backend-production.up.railway.app/api/chat',b=document.getElementById('almAiBtn'),p=document.getElementById('almAiPanel'),c=document.getElementById('almAiClose'),f=document.getElementById('almAiForm'),i=document.getElementById('almAiInput'),m=document.getElementById('almAiMsgs');const add=(t,k)=>{let d=document.createElement('div');d.className='alm-msg '+k;d.textContent=t;m.appendChild(d);m.scrollTop=m.scrollHeight;return d};b.onclick=()=>{p.classList.add('open');i.focus()};c.onclick=()=>p.classList.remove('open');f.onsubmit=async e=>{e.preventDefault();let q=i.value.trim();if(!q)return;add(q,'alm-user');i.value='';i.disabled=true;let w=add('جاري إعداد الإجابة…','alm-bot');try{let r=await fetch(E,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q})}),d=await r.json();if(!r.ok)throw 0;w.textContent=d.reply||'لم تصل إجابة.'}catch(e){w.textContent='تعذر الاتصال بـ ALMOGHANI AI حاليًا. حاول مرة أخرى.'}finally{i.disabled=false;i.focus()}}})();</script></body></html>

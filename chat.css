@@ -1,0 +1,342 @@
+#almChatBtn,
+#almChatPanel {
+  font-family: Tahoma, Arial, sans-serif;
+  direction: rtl;
+}
+
+#almChatBtn {
+  position: fixed;
+  left: max(18px, env(safe-area-inset-left));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 9998;
+  padding: 12px 17px;
+  border: 1px solid #d7bb70;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #16191e, #353942);
+  color: #f2d889;
+  box-shadow: 0 8px 24px #0005;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#almChatPanel {
+  position: fixed;
+  left: max(14px, env(safe-area-inset-left));
+  bottom: max(72px, calc(env(safe-area-inset-bottom) + 64px));
+  z-index: 9999;
+  display: none;
+  width: min(400px, calc(100vw - 28px));
+  height: min(660px, calc(100dvh - 100px - env(safe-area-inset-top)));
+  min-height: 340px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #b99953;
+  border-radius: 20px;
+  background: #101216;
+  color: #f4f2eb;
+  box-shadow: 0 18px 50px #0009;
+}
+
+#almChatPanel.open {
+  display: flex;
+}
+
+.alm-chat-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 1px solid #51452d;
+  background: linear-gradient(110deg, #111318, #292b30);
+}
+
+.alm-chat-header strong {
+  display: block;
+  color: #efd47f;
+  letter-spacing: 0.06em;
+}
+
+.alm-chat-header span {
+  display: block;
+  margin-top: 3px;
+  color: #b7b6b2;
+  font-size: 11px;
+}
+
+#almChatClose {
+  border: 0;
+  background: transparent;
+  color: #ddd;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.alm-chat-setup {
+  display: flex;
+  flex: none;
+  gap: 6px;
+  padding: 9px;
+  border-bottom: 1px solid #292b30;
+}
+
+#almChatPanel input {
+  min-width: 0;
+  border: 1px solid #55504a;
+  border-radius: 9px;
+  outline: none;
+  background: #1d2025;
+  color: #f4f2eb;
+  padding: 9px;
+  font: inherit;
+  font-size: 12px;
+}
+
+#almChatPanel input:focus {
+  border-color: #d4b760;
+}
+
+#almChatName {
+  flex: 1.2;
+}
+
+#almChatRoom {
+  flex: 1;
+}
+
+#almChatPanel button {
+  border: 1px solid #a88b4c;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #d7bc70, #9b7d3e);
+  color: #181818;
+  padding: 8px 11px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#almChatPanel button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+#almChatNotice {
+  flex: none;
+  min-height: 0;
+  padding: 0 10px;
+  color: #f0c777;
+  font-size: 11px;
+}
+
+#almChatNotice:not(:empty) {
+  padding-top: 6px;
+}
+
+.alm-chat-tabs {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  padding: 7px 10px;
+}
+
+.alm-chat-tabs button {
+  flex: 1;
+  background: #22252a !important;
+  color: #dedbd2 !important;
+}
+
+.alm-chat-tabs button.active {
+  border-color: #e1c576 !important;
+  background: #493e29 !important;
+  color: #f2d889 !important;
+}
+
+.alm-chat-view {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+#almChatMessages {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+  padding: 10px;
+  overscroll-behavior: contain;
+}
+
+.alm-chat-message {
+  max-width: 92%;
+  align-self: flex-start;
+  border: 1px solid #393a3a;
+  border-radius: 12px 12px 12px 3px;
+  background: #202329;
+  padding: 8px 10px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.alm-chat-message.own {
+  align-self: flex-end;
+  border-color: #806d3c;
+  border-radius: 12px 12px 3px 12px;
+  background: #353124;
+}
+
+.alm-chat-message header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  color: #efd47f;
+  font-size: 10px;
+}
+
+.alm-chat-message time {
+  color: #aaa7a1;
+  font-size: 9px;
+}
+
+.alm-chat-delete {
+  margin-inline-start: auto;
+  padding: 2px 7px !important;
+  background: #693b35 !important;
+  color: white !important;
+}
+
+#almChatForm {
+  display: flex;
+  flex: none;
+  gap: 7px;
+  padding: 9px;
+  border-top: 1px solid #292b30;
+}
+
+#almChatInput {
+  flex: 1;
+}
+
+#almChatForm button {
+  padding-inline: 14px !important;
+}
+
+#almChatVoiceView {
+  gap: 10px;
+  padding: 14px;
+  overflow: auto;
+}
+
+#almChatVoiceView p {
+  margin: 0;
+  color: #d0cec7;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.alm-voice-actions,
+.alm-admin-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+#almChatPanel .alm-voice-members,
+#almChatUsers {
+  display: grid;
+  gap: 6px;
+  color: #c9c6bf;
+  font-size: 12px;
+}
+
+#almChatAdminLogin {
+  flex: none;
+  border-top: 1px solid #292b30;
+  padding: 8px 10px;
+  color: #d7bc70;
+  font-size: 11px;
+}
+
+#almChatAdminLogin summary {
+  cursor: pointer;
+}
+
+#almChatAdminLogin form,
+#almChatUnbanForm {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+#almChatAdminLogin input,
+#almChatUnbanName {
+  flex: 1;
+}
+
+#almChatAdmin {
+  flex: 0 1 180px;
+  min-height: 0;
+  overflow: auto;
+  border-top: 1px solid #5b4d30;
+  background: #17191d;
+  padding: 8px 10px;
+  color: #efd47f;
+  font-size: 11px;
+}
+
+.alm-admin-toggles {
+  margin: 6px 0;
+}
+
+.alm-admin-user {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #eee;
+}
+
+.alm-admin-user span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alm-admin-user button {
+  padding: 4px 6px !important;
+  font-size: 10px !important;
+}
+
+#almChatPanel[hidden],
+#almChatPanel [hidden] {
+  display: none !important;
+}
+
+@media (max-width: 600px) {
+  #almChatPanel {
+    left: max(8px, env(safe-area-inset-left));
+    bottom: max(68px, calc(env(safe-area-inset-bottom) + 62px));
+    width: calc(100vw - 16px);
+    height: min(72dvh, calc(100dvh - 96px - env(safe-area-inset-top)));
+    min-height: 320px;
+    border-radius: 16px;
+  }
+
+  #almChatBtn {
+    left: max(12px, env(safe-area-inset-left));
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-height: 480px) {
+  #almChatPanel {
+    height: calc(100dvh - 82px - env(safe-area-inset-top));
+    min-height: 0;
+  }
+}
